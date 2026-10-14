@@ -28,8 +28,13 @@ FROM_NUMBER = os.environ["PLIVO_FROM_NUMBER"]
 ASSOCIATE_NUMBER = os.environ["ASSOCIATE_NUMBER"]
 DEFAULT_TO_NUMBER = os.getenv("DEFAULT_TO_NUMBER", "")
 OTP = os.getenv("OTP", "0106")  # birthdate in DDMM format
-AUDIO_URL = os.getenv("AUDIO_URL", "https://s3.amazonaws.com/plivocloud/music.mp3")
 BASE_URL = os.environ["PUBLIC_BASE_URL"].rstrip("/")  # public URL Plivo can reach
+# Audio for Level 2 option 1, per language. English defaults to the 10-second
+# spoken message in static/, Spanish to Plivo's public sample MP3.
+AUDIO_URLS = {
+    "en": os.getenv("AUDIO_URL_EN") or f"{BASE_URL}/static/message.mp3",
+    "es": os.getenv("AUDIO_URL_ES") or "https://s3.amazonaws.com/plivocloud/music.mp3",
+}
 
 app = Flask(__name__)
 plivo_client = plivo.RestClient(AUTH_ID, AUTH_TOKEN)
@@ -134,7 +139,7 @@ def choose_action():
     digits = request.values.get("Digits", "")
     if digits == "1":
         log_event("Level 2: playing audio message")
-        return xml(ivr.play_audio(BASE_URL, lang, AUDIO_URL))
+        return xml(ivr.play_audio(BASE_URL, lang, AUDIO_URLS[lang]))
     if digits == "2":
         log_event(f"Level 2: forwarding to live associate {ASSOCIATE_NUMBER}")
         return xml(ivr.forward_to_associate(lang, ASSOCIATE_NUMBER, FROM_NUMBER))

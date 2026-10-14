@@ -62,7 +62,8 @@ Copy `.env.example` to `.env` and fill it in:
 | `ASSOCIATE_NUMBER` | Live associate number for Level 2 option 2 (E.164) |
 | `DEFAULT_TO_NUMBER` | Number pre-filled in the web page (optional) |
 | `OTP` | Birthdate in DDMM format (hardcoded OTP) |
-| `AUDIO_URL` | Public MP3 played in Level 2 option 1 |
+| `AUDIO_URL_EN` | MP3 for Level 2 option 1 in English. Leave empty to use the bundled 10-second spoken message `static/message.mp3` |
+| `AUDIO_URL_ES` | MP3 for Level 2 option 1 in Spanish. Leave empty to use Plivo's public sample `music.mp3` |
 | `PUBLIC_BASE_URL` | Public URL of this app (from the tunnel), no trailing slash |
 
 `.env` is git-ignored, so credentials are never committed.
@@ -86,7 +87,7 @@ Copy `.env.example` to `.env` and fill it in:
 2. Enter a **wrong** OTP (e.g. `1234`): you hear "incorrect" and get asked again.
 3. Enter the **correct** OTP: you hear "You are verified" and the language menu.
 4. Press `1` (English) or `2` (Spanish). Any other key repeats the menu.
-5. Press `1` to hear the audio message (afterwards you return to this menu), or `2` to be connected to the live associate.
+5. Press `1` to hear the short spoken audio message (afterwards you return to this menu), or `2` to be connected to the live associate.
 
 The web page shows each step in its call log as it happens.
 
