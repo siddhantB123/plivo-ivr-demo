@@ -25,10 +25,11 @@ A small Flask app that places an outbound call with Plivo, authenticates the cal
 |---|---|
 | `GET /` | Web page to trigger the call and watch a live call log |
 | `POST /call` | Calls Plivo's API to start the outbound call |
-| `/answer` | Plivo hits this when the call is answered: asks for the OTP |
+| `/answer` | Plivo hits this when the call is answered: welcome + asks for the OTP |
 | `POST /otp` | Checks the OTP: wrong = ask again, right = Level 1 |
 | `POST /language` | Level 1: language choice |
 | `POST /action?lang=en\|es` | Level 2: play audio or dial the associate |
+| `POST /otp-menu`, `/language-menu`, `/action-menu` | Replay a menu (used after no input or after the audio) |
 | `POST /hangup` | Plivo reports the call ended |
 
 All call steps are returned as **Plivo XML** (built in [`ivr.py`](ivr.py)); the routing logic is in [`app.py`](app.py).
@@ -42,8 +43,8 @@ All call steps are returned as **Plivo XML** (built in [`ivr.py`](ivr.py)); the 
 ## Setup
 
 ```bash
-git clone <this-repo-url>
-cd plivo
+git clone https://github.com/siddhantB123/plivo-ivr-demo.git
+cd plivo-ivr-demo
 python -m venv .venv
 # Windows
 .venv\Scripts\activate
@@ -74,6 +75,7 @@ Copy `.env.example` to `.env` and fill it in:
    ```bash
    cloudflared tunnel --url http://localhost:5000
    ```
+   On Windows with the downloaded exe in the project folder: `.\cloudflared.exe tunnel --url http://localhost:5000`
 2. Put that URL in `.env` as `PUBLIC_BASE_URL`.
 3. Start the app:
    ```bash
@@ -83,11 +85,11 @@ Copy `.env.example` to `.env` and fill it in:
 
 ## Test script
 
-1. Answer the call. You will hear "Please enter your 4 digit OTP."
+1. Answer the call. You will hear "Welcome to Inspire Works. Please enter your 4 digit OTP."
 2. Enter a **wrong** OTP (e.g. `1234`): you hear "incorrect" and get asked again.
 3. Enter the **correct** OTP: you hear "You are verified" and the language menu.
 4. Press `1` (English) or `2` (Spanish). Any other key repeats the menu.
-5. Press `1` to hear the short spoken audio message (afterwards you return to this menu), or `2` to be connected to the live associate.
+5. Press `1` to hear the audio message (English: a 10-second spoken message; Spanish: Plivo's sample MP3). Afterwards you return to this menu. Press `2` to be connected to the live associate.
 
 The web page shows each step in its call log as it happens.
 
