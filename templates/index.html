@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>InspireWorks IVR Demo</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; color: #1f2937; background: #f9fafb; }
+    h1 { font-size: 1.5rem; margin-bottom: 4px; }
+    p.sub { color: #6b7280; margin-top: 0; }
+    form { display: flex; gap: 8px; margin: 24px 0; }
+    input { flex: 1; padding: 10px 12px; font-size: 1rem; border: 1px solid #d1d5db; border-radius: 8px; }
+    button { padding: 10px 18px; font-size: 1rem; border: 0; border-radius: 8px; background: #16a34a; color: white; cursor: pointer; }
+    button:disabled { background: #9ca3af; }
+    #status { min-height: 1.5em; }
+    .error { color: #dc2626; }
+    .call { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 16px; margin-bottom: 12px; }
+    .call h3 { font-size: 0.8rem; color: #6b7280; margin: 0 0 8px; font-weight: normal; }
+    .call li { margin: 4px 0; }
+    .call time { color: #6b7280; font-variant-numeric: tabular-nums; margin-right: 8px; }
+  </style>
+</head>
+<body>
+  <h1>InspireWorks IVR Demo</h1>
+  <p class="sub">Outbound call → OTP check → language menu → audio or live associate.</p>
+
+  <form id="call-form">
+    <input id="to" type="tel" placeholder="+91XXXXXXXXXX" value="{{ default_to }}" required>
+    <button id="call-btn" type="submit">Call me</button>
+  </form>
+  <div id="status"></div>
+
+  <h2>Call log</h2>
+  <div id="log"><p class="sub">No calls yet.</p></div>
+
+  <script>
+    const form = document.getElementById("call-form");
+    const btn = document.getElementById("call-btn");
+    const status = document.getElementById("status");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      btn.disabled = true;
+      status.textContent = "Placing call...";
+      status.className = "";
+      try {
+        const res = await fetch("/call", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ to: document.getElementById("to").value }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        status.textContent = `Calling ${data.to}... answer your phone.`;
+      } catch (err) {
+        status.textContent = "Error: " + err.message;
+        status.className = "error";
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    async function refreshLog() {
+      const calls = await (await fetch("/events")).json();
+      if (!calls.length) return;
+      document.getElementById("log").innerHTML = calls.map(c => `
+        <div class="call">
+          <h3>Call ${c.call_uuid}</h3>
+          <ul>${c.events.map(e => `<li><time>${e.time}</time>${e.message}</li>`).join("")}</ul>
+        </div>`).join("");
+    }
+    setInterval(refreshLog, 2000);
+    refreshLog();
+  </script>
+</body>
+</html>
