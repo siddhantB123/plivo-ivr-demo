@@ -69,7 +69,7 @@ Copy `.env.example` to `.env` and fill it in:
 
 ## Run
 
-1. Start a tunnel to port 5000 and copy the `https://....trycloudflare.com` URL it prints:
+1. Download `cloudflared` from the [official releases page](https://github.com/cloudflare/cloudflared/releases/latest) (Windows: `cloudflared-windows-amd64.exe`, rename to `cloudflared.exe`; macOS: `brew install cloudflared`). Start a tunnel to port 5000 and copy the `https://....trycloudflare.com` URL it prints:
    ```bash
    cloudflared tunnel --url http://localhost:5000
    ```
@@ -94,3 +94,10 @@ The web page shows each step in its call log as it happens.
 
 - If the Plivo account is a trial account, it can only call numbers verified in the Plivo console.
 - The call log is kept in memory and resets when the app restarts. No database is needed.
+- The quick-tunnel URL changes each time `cloudflared` restarts; update `PUBLIC_BASE_URL` and restart the app when it does.
+
+## Possible production improvements
+
+- Validate the `X-Plivo-Signature-V3` header on webhooks so only Plivo can drive the call flow.
+- Hang up after a few rounds of no input instead of repeating the menu indefinitely.
+- Store call logs in a database instead of memory.
